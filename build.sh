@@ -1,12 +1,12 @@
 #!/bin/bash
 
 HA_LATEST=false
-DOCKER_IMAGE_NAME="lroguet/rpi-home-assistant"
+DOCKER_IMAGE_NAME="frankstolle/home-assistant"
 RASPBIAN_RELEASE="stretch"
 
 log() {
    now=$(date +"%Y%m%d-%H%M%S")
-   echo "$now - $*" >> /var/log/home-assistant/docker-build.log
+   echo "$now - $*" >> docker-build.log
 }
 
 log ">>--------------------->>"
@@ -19,7 +19,7 @@ if [ "$1" != "" ]; then
    HA_VERSION=$1
    log "Docker image with Home Assistant $HA_VERSION"
 else
-   _HA_VERSION="$(cat /var/log/home-assistant/docker-build.version)"
+   _HA_VERSION="$(cat docker-build.version)"
    HA_VERSION="$(curl 'https://pypi.org/pypi/homeassistant/json' | jq '.info.version' | tr -d '"')"
    HA_LATEST=true
    log "Docker image with Home Assistant 'latest' (version $HA_VERSION)"
@@ -40,7 +40,7 @@ fi
 ## #####################################################################
 cat << _EOF_ > Dockerfile
 FROM resin/rpi-raspbian:$RASPBIAN_RELEASE
-MAINTAINER Ludovic Roguet <code@fourteenislands.io>
+MAINTAINER Frank Stolle <frank@stolle.email>
 
 # Base layer
 ENV ARCH=arm
@@ -98,7 +98,7 @@ if [ "$HA_LATEST" = true ]; then
    docker tag $DOCKER_IMAGE_NAME:$HA_VERSION $DOCKER_IMAGE_NAME:latest
    log "Pushing $DOCKER_IMAGE_NAME:latest"
    docker push $DOCKER_IMAGE_NAME:latest
-   echo $HA_VERSION > /var/log/home-assistant/docker-build.version
+   echo $HA_VERSION > docker-build.version
    docker rmi -f $DOCKER_IMAGE_NAME:latest
 fi
 
